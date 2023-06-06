@@ -1,0 +1,15 @@
+FROM centos:centos8
+USER root
+RUN cd /etc/yum.repos.d/
+RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+RUN sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+RUN yum install -y python3-pip  rpm-build gettext
+RUN pip3 install -U pip ;\
+    pip3 install -U setuptools ;\
+    pip3 install ansible==4.10.0 ansible-core==2.11.7 GitPython==3.1.20 pyarmor==7.3.1 pyinstaller==4.7 requests
+RUN mkdir -p /opt/ansible-agent
+COPY ansible-agent.py ansiblectl.py  /opt/ansible-agent/
+RUN cd /opt/ansible-agent/ ; ls ; \
+    pyarmor pack  -e " --onefile  --collect-all git  --collect-all ansible --collect-all requests --runtime-tmpdir /opt/ansible-agent" ansible-agent.py ; \
+    pyarmor pack  -e " --onefile  --collect-all git  --collect-all ansible --collect-all requests --runtime-tmpdir /opt/ansible-agent" ansiblectl.py
+RUN ls 

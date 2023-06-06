@@ -1,0 +1,6 @@
+location /ansiblectl {
+  gzip off;
+  fastcgi_pass  unix:/var/run/fcgiwrap.socket;
+  include /etc/nginx/fastcgi_params;
+  fastcgi_param SCRIPT_FILENAME  /opt/ansible-server/ansiblectl-server.sh;
+}

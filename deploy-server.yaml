@@ -1,0 +1,106 @@
+---
+- hosts: all
+  gather_facts: no
+  become: yes
+
+  tasks:
+
+  - name: install packages
+    package:
+      name: ansible, git, nginx, fcgiwrap
+      state: present
+
+  - name: pip install source executables prerequisites
+    pip:
+      name:
+        - GitPython
+      #executable: /usr/local/bin/pip
+
+  - name: nginx - delete default configs
+    file:
+      path:
+        - /etc/nginx/conf.d/default.conf
+        - /etc/nginx/sites-enabled/default.conf
+      state: absent
+
+  - name: nginx - add  configs
+    file:
+      path: /etc/nginx/sites-available/locate.conf
+      state: touch
+
+  - name: nginx - put configs
+    template:
+      src: "{{ item.src }}"
+      dest: "{{ item.dest }}"
+      mode: "0644"
+      owner: root
+      group: root
+    loop:
+      - { src: 'ansible-server/nginx/ansible-server.conf.j2',     dest: '/etc/nginx/sites-enabled/ansible-server.conf' }
+      - { src: 'ansible-server/nginx/ansiblectl-server.conf.j2',  dest: '/etc/nginx/sites-available/ansiblectl-server.conf' }
+
+  - name: nginx - enable and start service
+    service:
+      name=nginx
+      state=restarted
+      enabled=yes
+
+
+  - name: create folders
+    file:
+      path: "{{ item.path }}"
+      state: directory
+      mode: "{{ item.mode }}"
+      owner: root
+      group: "{{ item.group }}"
+    loop:
+      - path: "/etc/ansible-server"
+        mode: "0500"
+        group: "root"
+      - path: "/opt/ansible-server"
+        mode: "0650"
+        group: "www-data"
+      - path: "/var/log/ansible-server"
+        mode: "0600"
+        group: "root"
+
+  - name: copy executables
+    copy:
+      src:  "{{ item.src }}"
+      dest: "{{ item.dest }}"
+      mode: "0700"
+      owner: root
+      group: root
+    loop:
+      - { src: ansible-server/ansible-server.py,             dest: /opt/ansible-server/ansible-server.py           }
+      - { src: ansible-server/ansible_server_functions.py,   dest: /opt/ansible-server/ansible_server_functions.py }
+      - { src: ansible-server/ansiblectl-server.py,          dest: /opt/ansible-server/ansiblectl-server.py        }
+
+  - name: copy helper script
+    copy:
+      src:  ansible-server/ansiblectl-server.sh
+      dest: /opt/ansible-server/ansiblectl-server.sh
+      mode: "0750"
+      owner: root
+      group: www-data
+
+  - name: copy configs
+    template:
+      src:  "{{ item.src }}"
+      dest: "{{ item.dest }}"
+      mode: "0600"
+      owner: root
+      group: root
+    loop:
+      - { src: ansible-server/ansible-server.conf.j2,    dest: /etc/ansible-server/ansible-server.conf }
+      - { src: ansible-server/ansible-server.service.j2, dest: /etc/systemd/system/ansible-server.service }
+
+  - name: systemctl daemon-reload
+    command: /usr/bin/systemctl daemon-reload
+
+  - name: ansible-server systemd unit enable and start
+    service:
+      name: ansible-server
+      state: restarted
+      enabled: yes
+

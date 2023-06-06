@@ -1,0 +1,90 @@
+---
+- hosts: all
+  gather_facts: yes
+  become: yes
+
+  tasks:
+
+  - name: install git
+    package:
+      name: git
+      state: present
+    
+  - name: create folders
+    file:
+      path: "{{ item }}"
+      state: directory
+      mode: "0600"
+      owner: root
+      group: root
+    loop:
+      - /opt/ansible-agent
+      - /etc/ansible-agent
+
+  - name: install ansible
+    pip:
+      name:
+        - ansible
+
+  - name: pip install source executables prerequisites
+    pip:
+      name:
+        - ansible-core
+        - GitPython
+        - requests
+      #executable: /usr/local/bin/pip
+    when: use_agent_binary is not defined or use_agent_binary != 'true'
+
+  - name: copy source executables (ansible-agent.py, ansiblectl.py)
+    copy:
+      src:  "{{ item.src }}"
+      dest: "{{ item.dest }}"
+      mode: "0700"
+      owner: root
+      group: root
+    loop:
+      - { src: ansible-agent/ansible-agent.py,    dest: /opt/ansible-agent/ansible-agent }
+      - { src: ansible-agent/ansiblectl.py,       dest: /usr/bin/ansiblectl }
+    when: use_agent_binary is not defined or use_agent_binary != 'true'
+
+  - name: copy binary executables (BUILD/ansible-agent, BUILD/ansiblectl)
+    copy:
+      src:  "{{ item.src }}-{{ ansible_distribution|lower }}{{ ansible_distribution_major_version }}"
+      dest: "{{ item.dest }}"
+      mode: "0700"
+      owner: root
+      group: root
+    loop:
+      - { src: ansible-agent/BUILD/ansible-agent,    dest: /opt/ansible-agent/ansible-agent }
+      - { src: ansible-agent/BUILD/ansiblectl,       dest: /usr/bin/ansiblectl }
+    when: use_agent_binary is defined and use_agent_binary == 'true'
+
+  - name: copy CA certs bundle
+    copy:
+      src: "ansible-agent/{{ ca_bundle }}"
+      dest: /opt/ansible-agent/cabundle.crt
+      mode: "0644"
+      owner: root
+      group: root
+    when: ca_bundle is defined
+
+  - name: copy configs
+    template:
+      src:  "{{ item.src }}"
+      dest: "{{ item.dest }}"
+      mode: "0600"
+      owner: root
+      group: root
+    loop:
+      - { src: ansible-agent/ansible-agent.conf.j2,    dest: /etc/ansible-agent/ansible-agent.conf }
+      - { src: ansible-agent/ansible-agent.service.j2, dest: /etc/systemd/system/ansible-agent.service }
+
+  - name: systemctl daemon-reload
+    command: /usr/bin/systemctl daemon-reload
+
+  - name: ansible-agent systemd unit enable and start
+    service:
+      name: ansible-agent
+      state: restarted
+      enabled: yes
+

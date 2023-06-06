@@ -1,0 +1,16 @@
+FROM centos:centos7
+USER root
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
+RUN yum install -y python3-pip  rpm-build gettext
+RUN localedef -c -f UTF-8 -i en_US en_US.UTF-8 ;\
+    export LC_ALL=en_US.UTF-8 ;\
+    pip3 install -U pip ;\
+    pip3 install -U setuptools ;\
+    pip3 install ansible==4.10.0 ansible-core==2.11.7 GitPython==3.1.20 pyarmor==7.3.1 pyinstaller==4.7 requests
+RUN mkdir -p /opt/ansible-agent
+COPY ansible-agent.py ansiblectl.py  /opt/ansible-agent/
+RUN cd /opt/ansible-agent/ ; ls ; \
+    pyarmor pack  -e " --onefile  --collect-all git  --collect-all ansible --collect-all requests --runtime-tmpdir /opt/ansible-agent" ansible-agent.py ; \
+    pyarmor pack  -e " --onefile  --collect-all git  --collect-all ansible --collect-all requests --runtime-tmpdir /opt/ansible-agent" ansiblectl.py
+RUN ls 

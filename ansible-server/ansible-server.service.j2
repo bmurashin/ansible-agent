@@ -1,0 +1,16 @@
+[Unit]
+Description=ansible-server
+After=syslog.target network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+ExecStart=/opt/ansible-server/ansible-server.py
+Restart=always
+RestartSec=10sec
+SyslogIdentifier=ansible-server
+KillSignal=2
+
+[Install]
+WantedBy=multi-user.target

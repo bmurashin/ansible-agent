@@ -1,0 +1,18 @@
+[Unit]
+Description=ansible-agent-service
+After=syslog.target network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+Environment="ANSIBLE_COLLECTIONS_PATH=/usr/local/lib/python3.6/site-packages/ansible_collections/"
+ExecStart=/opt/ansible-agent/ansible-agent
+Restart=always
+RestartSec=10sec
+SyslogIdentifier=ansible-agent-service
+KillSignal=2
+
+[Install]
+WantedBy=multi-user.target
+

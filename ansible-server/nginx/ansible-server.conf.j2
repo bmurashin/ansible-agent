@@ -1,0 +1,7 @@
+server {
+  listen 80;
+  server_name  {{ inventory_hostname }};
+  real_ip_header    X-Forwarded-For;
+  include /etc/nginx/sites-available/locate.conf;
+  include /etc/nginx/sites-available/ansiblectl-server.conf;
+}

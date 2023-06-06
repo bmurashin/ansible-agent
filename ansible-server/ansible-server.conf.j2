@@ -1,0 +1,18 @@
+[ansible-server]
+#log_level = debug                              # uncomment if you want a flood of messages in your log
+path_tmp = /opt/ansible-server/tmp              # folder, where server prepares project pieces, before exposing them to agents via nginx
+path_prod = /opt/ansible-server/prod            # folder, where server stores shared data like roles and group_vars, that symlinked from hosts-folders
+path_doc_root = /var/www/ansible-server         # nginx document root, where hosts-folders moved from path_tmp
+#timer_scheduled_run_sec = 10                   # frequency in seconds, at which server will look for a new commit,  default 10
+#vault_password = ${VAULT_PASSWORD}             # Vault password to decrypt secrets,  default=''
+#new_vault_password = ${NEW_VAULT_PASSWORD}     # New vault password to reencrypt secrets,  default=''
+
+[git]
+git_local_path = /root/.ansible-server/project/                     # directory to download project to from git
+git_local_path_ansiblectl = /root/.ansiblectl-server/project/       # directory to download project to from git on ansiblectl request
+git_url = https://{{GIT_USER}}:{{GIT_TOKEN}}@git.tld/ansible.git    # git url
+git_branch = master                                                 # git branch to track
+
+[nginx]
+nginx_config_tmp = /etc/nginx/sites-available/locate.conf_tmp       # temporary file for building nginx configuration
+nginx_config_prod = /etc/nginx/sites-available/locate.conf          # target nginx config file

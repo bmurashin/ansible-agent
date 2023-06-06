@@ -1,0 +1,27 @@
+[ansible]
+hostname = {{ inventory_hostname }}         # hostname, that agent will use to search in inventory
+skip_tags = ansible-agent-install           # https://docs.ansible.com/ansible/latest/cli/ansible-playbook.html#cmdoption-ansible-playbook-skip-tags
+#extra_vars =                               # https://docs.ansible.com/ansible/latest/cli/ansible-playbook.html#cmdoption-ansible-playbook-e
+#inventory_file =                           # ansible inventory file,  default "hosts"
+#playbook =                                 # playbook file to use,    default "site.yaml"
+#timer_scheduled_run_sec =                  # frequency in seconds, at which agent will run unconditionally,  default 1500
+#timer_git_check_sec =                      # frequency in seconds, at which agent will look for a new commit (if using git),  default 30
+#project_path =                             # directory to download project to from git/ansible-server,  default /root/.ansible-agent/project/
+#project_path_ansiblectl                    # same for ansiblectl utility,  default /root/.ansible-agent/projectcli/
+
+[server]
+#server_url = http://ansible-server.tdl/    # ansible-server url - if set, will disable using git
+
+[git]
+#git_url = https://{{GIT_USER|default('')}}:{{GIT_TOKEN|default('')}}@git.tld/ansible.git   # git url - not recommended for projects with sensitive data. will be ignored if server_url is set
+#git_branch =                               # git branch to track,  default master
+
+[ssl]
+#ca_cert_bundle_path = /opt/ansible-agent/cabundle.crt      # CA certs to validate connections to server_url/git_url,  default=True - which means connection will be validated using only CA certs embeded in requests/certifi packages
+
+[alerts]
+# Basic alerting that you can use to send messages using HTTP POST Content-Type: application/json
+# If you want better monitoring - use rsyslog capabilities, since agent is normaly run as systemd unit
+#alert_user = 
+#alert_password = {{ alert_pass | default('') }}
+#alert_url = https://example.tld/telegram-gateway/send
