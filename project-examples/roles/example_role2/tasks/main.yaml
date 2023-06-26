@@ -1,0 +1,10 @@
+- name: create dirs2
+  file:
+    path: "{{ item.path }}"
+    state: directory
+    mode: "{{ item.mode }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    recurse: yes
+  with_items: "{{ create_dirs }}"
+

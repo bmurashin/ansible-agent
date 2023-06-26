@@ -1,0 +1,11 @@
+- hosts: service1
+  gather_facts: true
+  become: yes
+  roles:
+   - role: example_role1
+
+- hosts: service2
+  gather_facts: true
+  become: yes
+  roles:
+   - role: example_role2

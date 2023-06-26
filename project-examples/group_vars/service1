@@ -1,0 +1,3 @@
+---
+create_dirs:
+  - {path: '/var/log/turgenev1', mode: '0770', owner: 'root', group: 'root'}
